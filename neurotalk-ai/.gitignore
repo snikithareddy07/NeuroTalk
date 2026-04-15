@@ -1,0 +1,36 @@
+# ======================
+# Python (backend + ml)
+# ======================
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+env/
+
+# Environment variables
+.env
+
+# ======================
+# ML / Large files
+# ======================
+ml/saved_model/
+ml/distilbert_results/
+*.pt
+*.pth
+*.h5
+*.bin
+*.ckpt
+
+# ======================
+# Node (frontend)
+# ======================
+frontend/node_modules/
+
+# Build outputs (if any)
+frontend/dist/
+
+# ======================
+# OS / Misc
+# ======================
+.DS_Store

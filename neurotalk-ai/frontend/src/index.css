@@ -1,0 +1,63 @@
+:root {
+  --bg: #0f0f1a;
+  --card-bg: #1a1a2e;
+  --accent-purple: #7c3aed;
+  --accent-blue: #3b82f6;
+  --text-color: #ffffff;
+  --text-muted: #94a3b8;
+  --sans: 'Inter', system-ui, sans-serif;
+  --radius-xl: 16px;
+  --shadow-subtle: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--text-color);
+  font-family: var(--sans);
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.page-transition {
+  width: 100%;
+  min-height: 100%;
+}
+
+/* Global utility cards */
+.global-card {
+  background: var(--card-bg) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-subtle) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
