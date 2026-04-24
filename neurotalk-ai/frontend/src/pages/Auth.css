@@ -3,26 +3,28 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f7f9fc; /* Light background */
+  background-color: #0f172a; /* Dark navy background */
   padding: 2rem 1rem;
 }
 
 .auth-card {
   width: 100%;
   max-width: 440px;
-  background: #ffffff; /* Clean white card */
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05); /* Soft professional shadow */
-  border-radius: 20px;
+  background: #1e293b; /* Premium dark card background */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05); /* Subtle border */
+  border-radius: 16px; /* Rounded corners */
   padding: 40px;
   display: flex;
   flex-direction: column;
   align-items: stretch;
 }
 
-/* Proper Pill Toggle */
+/* Proper Pill Toggle Dark Theme */
 .role-toggle {
   display: flex;
-  background: #f1f5f9; /* light gray container background */
+  background: rgba(15, 23, 42, 0.6); /* Dark nested background */
+  border: 1px solid rgba(255, 255, 255, 0.05); /* Very subtle separation */
   border-radius: 50px;
   padding: 4px;
   margin: 0 auto 24px auto; /* centered horizontally above header */
@@ -38,17 +40,17 @@
   background: transparent;
   border-radius: 50px;
   font-weight: 600;
-  font-size: 0.9rem;
-  color: #64748b; /* muted text for unselected */
+  font-size: 0.95rem;
+  color: #94a3b8; /* Muted text for unselected */
   cursor: pointer;
   transition: all 0.3s ease;
   z-index: 2;
 }
 
 .role-toggle button.active {
-  background: #ffffff; /* white selected pill */
-  color: #0f172a; /* dark text */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* subtle elevation */
+  background: #3b82f6; /* Blue selected pill */
+  color: #ffffff; /* White text */
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); /* Subtle blue elevation */
 }
 
 /* Ensure single button fills perfectly in signup */
@@ -62,22 +64,22 @@
 }
 
 .auth-header h2 {
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 800;
-  color: #0f172a; /* Dark title */
+  color: #ffffff; /* White primary text */
   margin-bottom: 8px;
   letter-spacing: -0.5px;
 }
 
 .auth-header p {
-  color: #64748b;
+  color: #94a3b8; /* Gray secondary text */
   font-size: 0.95rem;
 }
 
 .auth-error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
   padding: 12px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -88,28 +90,28 @@
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px; /* Better spacing */
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .form-group label {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #475569;
+  color: #cbd5e1; /* Slightly brighter gray for contrast */
   margin-left: 4px;
 }
 
 .auth-input {
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
+  background: rgba(15, 23, 42, 0.6); /* Dark nested background */
+  border: 1px solid rgba(255, 255, 255, 0.1); /* Light border */
   padding: 14px 16px;
-  border-radius: 10px; /* Rounded borders */
-  color: #0f172a;
+  border-radius: 12px; /* Consistent padding and corners */
+  color: #ffffff; /* White text typing */
   font-size: 1rem;
   font-family: 'Inter', sans-serif;
   transition: all 0.2s ease;
@@ -117,51 +119,57 @@
 
 .auth-input:focus {
   outline: none;
-  border-color: #334155;
-  box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.1);
+  border-color: #3b82f6; /* Blue border on focus */
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* Blue glow focus effect */
 }
 
 .auth-input::placeholder {
-  color: #94a3b8;
+  color: #64748b; /* Muted placeholder */
 }
 
 .auth-submit-btn {
-  background: #0f172a; /* Solid dark primary button */
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); /* Same primary blue gradient */
   color: #ffffff;
   padding: 14px;
-  border-radius: 10px;
+  border-radius: 12px;
   font-weight: 600;
   font-size: 1rem;
   border: none;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
   margin-top: 8px;
+  width: 100%; /* Full width modern button */
 }
 
 .auth-submit-btn:hover:not(:disabled) {
-  background: #1e293b;
+  transform: translateY(-2px); /* Hover animation */
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4); /* Glow on hover */
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
 }
 
 .auth-submit-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .auth-footer {
   margin-top: 24px;
   text-align: center;
-  font-size: 0.9rem;
-  color: #64748b;
+  font-size: 0.95rem;
+  color: #94a3b8;
 }
 
 .auth-link {
-  color: #0f172a;
+  color: #60a5fa; /* Light blue secondary links */
   text-decoration: none;
   font-weight: 600;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
 }
 
 .auth-link:hover {
   text-decoration: underline;
-  color: #334155;
+  color: #93c5fd;
 }
