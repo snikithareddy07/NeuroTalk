@@ -9,6 +9,7 @@ import './Auth.css';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('user');
   const [isLoading, setIsLoading] = useState(false);
   
   const { login } = useAuth();
@@ -19,15 +20,20 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5001/api/auth/login', {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         email,
-        password
+        password,
+        role
       });
 
       if (response.data.access_token) {
         toast.success('Welcome back!');
         login(response.data.access_token, response.data.user);
-        navigate('/dashboard');
+        if (response.data.user.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
       }
     } catch (err) {
       toast.error(
@@ -40,18 +46,32 @@ const Login = () => {
 
   return (
     <div className="auth-container">
-      <div className="auth-glow-orb orb-purple-auth"></div>
-      <div className="auth-glow-orb orb-blue-auth"></div>
-
       <motion.div 
-        className="auth-card global-card"
+        className="auth-card"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
+        <div className="role-toggle">
+          <button 
+            type="button" 
+            className={role === 'user' ? 'active' : ''}
+            onClick={() => setRole('user')}
+          >
+            User
+          </button>
+          <button 
+            type="button" 
+            className={role === 'admin' ? 'active' : ''}
+            onClick={() => setRole('admin')}
+          >
+            Admin
+          </button>
+        </div>
+
         <div className="auth-header">
           <h2>Welcome Back</h2>
-          <p>Login to continue your mental wellness journey.</p>
+          <p>Sign in to your NeuroTalk AI account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
@@ -91,7 +111,7 @@ const Login = () => {
         </form>
 
         <div className="auth-footer">
-          <p>Don't have an account? <Link to="/signup" className="auth-link">Sign up here</Link></p>
+          <p>Don't have an account? <Link to="/signup" className="auth-link">Create Account</Link></p>
         </div>
       </motion.div>
     </div>

@@ -14,7 +14,7 @@ def signup():
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
-    role = data.get('role', 'user')  # Default to 'user', allow manual override
+    role = 'user'  # Always force 'user' on signup
     
     if not username or not email or not password:
         return jsonify({'error': 'Username, email, and password are required'}), 400
@@ -48,6 +48,7 @@ def login():
     
     email = data.get('email')
     password = data.get('password')
+    role = data.get('role', 'user')
     
     if not email or not password:
         return jsonify({'error': 'Email and password are required'}), 400
@@ -56,6 +57,10 @@ def login():
     
     if not user or not check_password_hash(user['password'], password):
         return jsonify({'error': 'Invalid credentials'}), 401
+        
+    db_role = user.get('role', 'user')
+    if role != db_role:
+        return jsonify({'error': 'Role mismatch. You cannot login as this role.'}), 403
         
     # Include role in the JWT additional claims
     additional_claims = {

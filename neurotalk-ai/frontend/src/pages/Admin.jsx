@@ -1,10 +1,12 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
 import { 
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
+  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend
 } from 'recharts';
+import toast from 'react-hot-toast';
 import './Admin.css';
 
 const emotionColors = {
@@ -18,197 +20,341 @@ const emotionColors = {
 };
 
 const Admin = () => {
-  const { token, user } = useAuth();
-  const [data, setData] = useState({ users: [], predictions: [] });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { token } = useAuth();
+  const [activeTab, setActiveTab] = useState('users');
+  
+  // Tab Data States
+  const [usersData, setUsersData] = useState([]);
+  const [predictionsData, setPredictionsData] = useState({ predictions: [], total_pages: 1, page: 1 });
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [monitoringData, setMonitoringData] = useState(null);
+  
+  const [loading, setLoading] = useState(false);
 
+  // Fetch logic based on active tab
   useEffect(() => {
-    const fetchAdminData = async () => {
+    const fetchTabData = async () => {
+      setLoading(true);
       try {
-        setLoading(true);
-        const res = await axios.get('http://localhost:5001/api/admin/data', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setData(res.data);
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        
+        if (activeTab === 'users' || activeTab === 'activity') {
+          // Fetch users (used by both users and activity tabs)
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/users`, config);
+          setUsersData(res.data);
+        } else if (activeTab === 'predictions') {
+          await loadPredictions(1);
+        } else if (activeTab === 'analytics') {
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/analytics`, config);
+          setAnalyticsData(res.data);
+        } else if (activeTab === 'monitoring') {
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/monitoring`, config);
+          setMonitoringData(res.data);
+        }
       } catch (err) {
-        setError(err.response?.data?.error || "Failed to fetch admin statistics.");
+        toast.error(err.response?.data?.error || "Failed to load admin data");
       } finally {
         setLoading(false);
       }
     };
-    fetchAdminData();
-  }, [token]);
+    
+    fetchTabData();
+  }, [activeTab, token]);
 
-  const stats = useMemo(() => {
-    const totalUsers = data.users.length;
-    const totalPredictions = data.predictions.length;
+  const loadPredictions = async (page) => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/predictions?page=${page}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPredictionsData(res.data);
+    } catch (err) {
+      toast.error("Failed to load predictions");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // Engagement & Most Active User
-    const userEngagement = {};
-    data.predictions.forEach(p => {
-      if (p.user_id) {
-        userEngagement[p.user_id] = (userEngagement[p.user_id] || 0) + 1;
-      }
-    });
+  const handleDeletePrediction = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this prediction?")) return;
+    
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_URL}/api/admin/predictions/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success("Prediction deleted");
+      loadPredictions(predictionsData.page); // Reload current page
+    } catch (err) {
+      toast.error("Failed to delete prediction");
+    }
+  };
 
-    let mostActiveUserId = null;
-    let mostActiveCount = 0;
-    Object.keys(userEngagement).forEach(uid => {
-      if (userEngagement[uid] > mostActiveCount) {
-        mostActiveCount = userEngagement[uid];
-        mostActiveUserId = uid;
-      }
-    });
+  // Render Helpers
+  const renderUsersTab = () => {
+    const sortedUsers = [...usersData].sort((a, b) => b.total_predictions - a.total_predictions);
+    return (
+      <div className="admin-table-container">
+        <h3>User Directory</h3>
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Total Analyses</th>
+              <th>Last Active</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedUsers.map(u => (
+              <tr key={u._id}>
+                <td>{u.username}</td>
+                <td>{u.email}</td>
+                <td>{u.total_predictions}</td>
+                <td>{u.last_active ? new Date(u.last_active).toLocaleDateString() : 'Never'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
-    const mostActiveUserObj = data.users.find(u => u._id === mostActiveUserId);
-    const mostActiveUser = mostActiveUserObj ? mostActiveUserObj.username : "N/A";
+  const renderPredictionsTab = () => {
+    return (
+      <div className="admin-table-container">
+        <h3>All Predictions</h3>
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Input Text</th>
+              <th>Emotion</th>
+              <th>Confidence</th>
+              <th>Timestamp</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {predictionsData.predictions.map(p => (
+              <tr key={p._id}>
+                <td>{p.username}</td>
+                <td>{p.text.length > 80 ? p.text.substring(0, 80) + '...' : p.text}</td>
+                <td>
+                  <span 
+                    className="emotion-badge" 
+                    style={{ backgroundColor: emotionColors[p.predicted_emotion] || '#gray', color: '#000' }}
+                  >
+                    {p.predicted_emotion}
+                  </span>
+                </td>
+                <td>{(p.confidence * 100).toFixed(1)}%</td>
+                <td>{new Date(p.timestamp).toLocaleDateString()}</td>
+                <td>
+                  <button onClick={() => handleDeletePrediction(p._id)} className="btn-delete">Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        
+        <div className="pagination">
+          <button 
+            disabled={predictionsData.page <= 1} 
+            onClick={() => loadPredictions(predictionsData.page - 1)}
+          >
+            Previous
+          </button>
+          <span>Page {predictionsData.page} of {predictionsData.total_pages || 1}</span>
+          <button 
+            disabled={predictionsData.page >= predictionsData.total_pages}
+            onClick={() => loadPredictions(predictionsData.page + 1)}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    );
+  };
 
-    // Bar Chart: Global Emotion Distribution
-    const distMap = {};
-    data.predictions.forEach(p => {
-      distMap[p.predicted_emotion] = (distMap[p.predicted_emotion] || 0) + 1;
-    });
-    const distData = Object.keys(distMap).map(emo => ({
-      emotion: emo.charAt(0).toUpperCase() + emo.slice(1),
-      rawEmotion: emo,
-      count: distMap[emo]
+  const renderAnalyticsTab = () => {
+    if (!analyticsData) return null;
+    
+    // Format Emotion Output
+    const distData = Object.keys(analyticsData.emotion_distribution).map(k => ({
+      name: k,
+      value: analyticsData.emotion_distribution[k]
+    }));
+    
+    // Format Distortion Output
+    const distFreqData = Object.keys(analyticsData.distortion_frequency).map(k => ({
+      name: k,
+      count: analyticsData.distortion_frequency[k]
     })).sort((a,b) => b.count - a.count);
 
-    // Line Chart: 30-Day Activity
-    const activityMap = new Map();
-    for(let i=29; i>=0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      activityMap.set(d.toISOString().split('T')[0], 0);
-    }
-    data.predictions.forEach(p => {
-      const dStr = new Date(p.timestamp).toISOString().split('T')[0];
-      if (activityMap.has(dStr)) {
-        activityMap.set(dStr, activityMap.get(dStr) + 1);
-      }
-    });
-    const lineData = Array.from(activityMap.keys()).map(date => ({
-      date: date.substring(5),
-      activity: activityMap.get(date)
-    }));
+    return (
+      <div className="charts-grid">
+        <div className="chart-card">
+          <h3>Global Emotion Distribution</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie data={distData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} label>
+                {distData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={emotionColors[entry.name] || '#8884d8'} />
+                ))}
+              </Pie>
+              <Tooltip contentStyle={{ backgroundColor: '#1a1a2e', borderColor: '#333' }} />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+        
+        <div className="chart-card">
+          <h3>30-Day Emotion Trend</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={analyticsData.thirty_day_trend}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+              <XAxis dataKey="_id" stroke="#aaa" />
+              <YAxis stroke="#aaa" />
+              <Tooltip contentStyle={{ backgroundColor: '#1a1a2e', borderColor: '#333' }} />
+              <Line type="monotone" dataKey="count" stroke="#8884d8" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        
+        <div className="chart-card full-width">
+          <h3>Distortion Frequency</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={distFreqData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#333" />
+              <XAxis dataKey="name" stroke="#aaa" />
+              <YAxis stroke="#aaa" />
+              <Tooltip contentStyle={{ backgroundColor: '#1a1a2e', borderColor: '#333' }} />
+              <Bar dataKey="count" fill="#f59e0b" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    );
+  };
 
-    return { totalUsers, totalPredictions, mostActiveUser, distData, lineData };
-  }, [data]);
+  const renderMonitoringTab = () => {
+    if (!monitoringData) return null;
+    return (
+      <div>
+        <div className="stats-grid">
+          <div className="stat-card">
+            <div className="stat-title">Total Predictions</div>
+            <div className="stat-value">{monitoringData.total_predictions}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-title">Average Confidence</div>
+            <div className="stat-value">{(monitoringData.average_confidence * 100).toFixed(1)}%</div>
+          </div>
+          <div className="stat-card danger">
+            <div className="stat-title">Low Confidence Queries</div>
+            <div className="stat-value">{monitoringData.low_confidence_predictions.length}</div>
+          </div>
+        </div>
+        
+        <div className="admin-table-container">
+          <h3>Low Confidence Predictions (&lt; 0.55)</h3>
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Input Text</th>
+                <th>Predicted Emotion</th>
+                <th>Confidence</th>
+              </tr>
+            </thead>
+            <tbody>
+              {monitoringData.low_confidence_predictions.map(p => (
+                <tr key={p._id}>
+                  <td>{p.text}</td>
+                  <td>{p.predicted_emotion}</td>
+                  <td className="text-danger font-bold">{(p.confidence * 100).toFixed(1)}%</td>
+                </tr>
+              ))}
+              {monitoringData.low_confidence_predictions.length === 0 && (
+                <tr><td colSpan="3" style={{textAlign: 'center', padding: '2rem'}}>No low confidence predictions found. Model is performing well!</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
 
-  const userTableData = useMemo(() => {
-    const userCountMap = {};
-    data.predictions.forEach(p => {
-      if(p.user_id) userCountMap[p.user_id] = (userCountMap[p.user_id] || 0) +1;
-    });
+  const renderActivityTab = () => {
+    // Sort by last active descending
+    const sortedUsers = [...usersData]
+      .filter(u => u.last_active)
+      .sort((a, b) => new Date(b.last_active) - new Date(a.last_active));
+      
+    // Append users who never activated at the bottom
+    const neverActive = [...usersData].filter(u => !u.last_active);
+    
+    const combined = [...sortedUsers, ...neverActive];
 
-    return data.users.map(u => ({
-      id: u._id,
-      username: u.username,
-      email: u.email,
-      predictions: userCountMap[u._id] || 0,
-      joinDate: u.created_at ? new Date(u.created_at).toLocaleDateString() : "Unknown",
-      role: u.role || 'user'
-    })).sort((a,b) => b.predictions - a.predictions);
-  }, [data]);
+    return (
+      <div className="admin-table-container">
+        <h3>User Activity Log</h3>
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Reflections</th>
+              <th>Last Active Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            {combined.map(u => (
+              <tr key={u._id}>
+                <td>{u.username}</td>
+                <td>{u.total_predictions}</td>
+                <td>{u.last_active ? new Date(u.last_active).toLocaleString() : 'Never'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
 
   return (
-    <div className="admin-container page-transition">
+    <div className="admin-container">
       <div className="admin-header">
         <h2>Global Command Center</h2>
-        <p>Monitor real-time system performance and user engagement metrics.</p>
+        <p>Advanced system monitoring and administrative tools.</p>
       </div>
-
-      {loading ? (
-        <div className="admin-loading">Extracting Server Intelligence...</div>
-      ) : error ? (
-        <div className="admin-error">{error}</div>
-      ) : (
-        <>
-          <div className="admin-stats-grid">
-            <motion.div className="admin-stat-card card-shadow" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-              <div className="stat-title">Total Users</div>
-              <div className="stat-big-value">{stats.totalUsers}</div>
+      
+      <div className="admin-layout">
+        <aside className="admin-sidebar">
+          <button className={`admin-sidebar-btn ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>Users</button>
+          <button className={`admin-sidebar-btn ${activeTab === 'predictions' ? 'active' : ''}`} onClick={() => setActiveTab('predictions')}>All Predictions</button>
+          <button className={`admin-sidebar-btn ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')}>Analytics</button>
+          <button className={`admin-sidebar-btn ${activeTab === 'monitoring' ? 'active' : ''}`} onClick={() => setActiveTab('monitoring')}>Model Monitoring</button>
+          <button className={`admin-sidebar-btn ${activeTab === 'activity' ? 'active' : ''}`} onClick={() => setActiveTab('activity')}>User Activity</button>
+        </aside>
+        
+        <main className="admin-content">
+          {loading ? (
+            <div className="admin-loading">Loading system data...</div>
+          ) : (
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {activeTab === 'users' && renderUsersTab()}
+              {activeTab === 'predictions' && renderPredictionsTab()}
+              {activeTab === 'analytics' && renderAnalyticsTab()}
+              {activeTab === 'monitoring' && renderMonitoringTab()}
+              {activeTab === 'activity' && renderActivityTab()}
             </motion.div>
-            <motion.div className="admin-stat-card card-shadow" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{delay: 0.1}}>
-              <div className="stat-title">Total Analyses</div>
-              <div className="stat-big-value">{stats.totalPredictions}</div>
-            </motion.div>
-            <motion.div className="admin-stat-card card-shadow" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{delay: 0.2}}>
-              <div className="stat-title">Most Active Member</div>
-              <div className="stat-big-value" style={{fontSize: '1.5rem'}}>{stats.mostActiveUser}</div>
-            </motion.div>
-          </div>
-
-          <div className="admin-charts-grid">
-            <motion.div className="admin-chart-card card-shadow" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{delay: 0.3}}>
-              <h3>Global Emotion Distribution</h3>
-              <div className="admin-chart-wrapper">
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={stats.distData} margin={{top: 20, right: 0, left: -20, bottom: 0}}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="emotion" tick={{ fill: 'var(--text-muted)' }} />
-                    <YAxis tick={{ fill: 'var(--text-muted)' }} />
-                    <Tooltip contentStyle={{ backgroundColor: 'var(--card-bg)', borderColor: 'rgba(255,255,255,0.1)' }} />
-                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                      {stats.distData.map((entry, index) => (
-                        <cell key={`cell-${index}`} fill={emotionColors[entry.rawEmotion] || 'var(--accent-blue)'} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </motion.div>
-
-            <motion.div className="admin-chart-card card-shadow" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{delay: 0.4}}>
-              <h3>Network Activity (30 Days)</h3>
-              <div className="admin-chart-wrapper">
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={stats.lineData} margin={{top: 20, right: 0, left: -20, bottom: 0}}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
-                    <XAxis dataKey="date" tick={{ fill: 'var(--text-muted)' }} />
-                    <YAxis tick={{ fill: 'var(--text-muted)' }} />
-                    <Tooltip contentStyle={{ backgroundColor: 'var(--card-bg)', borderColor: 'rgba(255,255,255,0.1)' }} />
-                    <Line type="monotone" dataKey="activity" stroke="var(--accent-purple)" strokeWidth={3} dot={false} activeDot={{r: 6}} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </motion.div>
-          </div>
-
-          <motion.div className="admin-table-container card-shadow" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{delay: 0.5}}>
-            <h3>User Directory</h3>
-            <div className="table-wrapper">
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Join Date</th>
-                    <th>Analyses Run</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {userTableData.map(u => (
-                    <tr key={u.id}>
-                      <td className="font-semibold">{u.username}</td>
-                      <td>{u.email}</td>
-                      <td>
-                        <span className={`admin-role-badge ${u.role === 'admin' ? 'admin-badge' : 'user-badge'}`}>
-                          {u.role.toUpperCase()}
-                        </span>
-                      </td>
-                      <td>{u.joinDate}</td>
-                      <td className="text-center font-monospace">{u.predictions}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </motion.div>
-        </>
-      )}
+          )}
+        </main>
+      </div>
     </div>
   );
 };

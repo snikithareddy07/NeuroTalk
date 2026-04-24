@@ -27,7 +27,7 @@ const Profile = () => {
     const fetchHistory = async () => {
       try {
         setLoading(true);
-        const res = await axios.get('http://localhost:5001/api/predict/history', {
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/predict/history`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setHistoryRecords(res.data);

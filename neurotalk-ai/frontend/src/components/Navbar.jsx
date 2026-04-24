@@ -24,11 +24,16 @@ const Navbar = () => {
           </>
         ) : (
           <>
-            <Link to="/dashboard" className="nav-link">Dashboard</Link>
-            <Link to="/history" className="nav-link">History</Link>
-            <Link to="/profile" className="nav-link">Profile</Link>
-            {user.role === 'admin' && (
-              <Link to="/admin" className="nav-link admin-link">Admin</Link>
+            {user.role !== 'admin' ? (
+              <>
+                <Link to="/dashboard" className="nav-link">Dashboard</Link>
+                <Link to="/history" className="nav-link">History</Link>
+                <Link to="/profile" className="nav-link">Profile</Link>
+              </>
+            ) : (
+              <Link to="/admin" className="nav-link admin-link">
+                <span style={{ backgroundColor: '#dc2626', color: 'white', padding: '4px 10px', borderRadius: '16px', fontSize: '0.85rem', fontWeight: 'bold' }}>Admin Panel</span>
+              </Link>
             )}
             <button onClick={handleLogout} className="logout-btn">Logout</button>
           </>

@@ -16,14 +16,13 @@ def create_app():
     app = Flask(__name__)
     app.config['CORS_HEADERS'] = 'Content-Type'
     # Configure CORS strictly for React frontend
-    CORS(app, resources={
-        r"/api/*": {
-            "origins": ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://127.0.0.1:5173", "http://127.0.0.1:5174"],
-            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-            "allow_headers": ["Content-Type", "Authorization"],
-            "supports_credentials": True
-        }
-    })
+    CORS(
+    app,
+    resources={r"/api/*": {"origins": ["http://localhost:5173"]}},
+    supports_credentials=True,
+    allow_headers=["Content-Type", "Authorization"],
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+)
     
     # Configure JWT
     app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "your_jwt_secret_key_here")
@@ -43,4 +42,4 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(debug=True, port=5001)
+    app.run(host="0.0.0.0", debug=True, port=5001)

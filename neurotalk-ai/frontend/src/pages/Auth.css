@@ -1,50 +1,59 @@
 .auth-container {
-  min-height: calc(100vh - 80px); /* Assumes navbar is roughly 80px */
+  min-height: calc(100vh - 80px);
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  background-color: #05050A; /* matches Landing */
-  z-index: 10;
+  background-color: #f7f9fc; /* Light background */
   padding: 2rem 1rem;
-}
-
-/* Auth specific glows */
-.auth-glow-orb {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(100px);
-  z-index: 0;
-  opacity: 0.4;
-}
-
-.orb-purple-auth {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(126, 34, 206, 0.5) 0%, rgba(107, 0, 255, 0) 70%);
-  top: 10%;
-  left: 20%;
-}
-
-.orb-blue-auth {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(0, 240, 255, 0.4) 0%, rgba(0, 200, 255, 0) 70%);
-  bottom: 0%;
-  right: 20%;
 }
 
 .auth-card {
   width: 100%;
-  max-width: 420px;
-  background: rgba(20, 20, 30, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(107, 0, 255, 0.05);
+  max-width: 440px;
+  background: #ffffff; /* Clean white card */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05); /* Soft professional shadow */
   border-radius: 20px;
   padding: 40px;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Proper Pill Toggle */
+.role-toggle {
+  display: flex;
+  background: #f1f5f9; /* light gray container background */
+  border-radius: 50px;
+  padding: 4px;
+  margin: 0 auto 24px auto; /* centered horizontally above header */
+  width: 100%;
+  max-width: 250px; /* Constrain width to look like a pill */
+  position: relative;
+}
+
+.role-toggle button {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #64748b; /* muted text for unselected */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+
+.role-toggle button.active {
+  background: #ffffff; /* white selected pill */
+  color: #0f172a; /* dark text */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* subtle elevation */
+}
+
+/* Ensure single button fills perfectly in signup */
+.role-toggle button:only-child {
+  width: 100%;
 }
 
 .auth-header {
@@ -54,21 +63,21 @@
 
 .auth-header h2 {
   font-size: 2rem;
-  font-weight: 700;
-  color: #f8fafc;
+  font-weight: 800;
+  color: #0f172a; /* Dark title */
   margin-bottom: 8px;
   letter-spacing: -0.5px;
 }
 
 .auth-header p {
-  color: #94a3b8;
+  color: #64748b;
   font-size: 0.95rem;
 }
 
 .auth-error {
-  background: rgba(220, 38, 38, 0.1);
-  border: 1px solid rgba(220, 38, 38, 0.3);
-  color: #fca5a5;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #ef4444;
   padding: 12px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -90,17 +99,17 @@
 
 .form-group label {
   font-size: 0.85rem;
-  font-weight: 500;
-  color: #cbd5e1;
+  font-weight: 600;
+  color: #475569;
   margin-left: 4px;
 }
 
 .auth-input {
-  background: rgba(15, 15, 20, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
   padding: 14px 16px;
-  border-radius: 10px;
-  color: #ffffff;
+  border-radius: 10px; /* Rounded borders */
+  color: #0f172a;
   font-size: 1rem;
   font-family: 'Inter', sans-serif;
   transition: all 0.2s ease;
@@ -108,16 +117,16 @@
 
 .auth-input:focus {
   outline: none;
-  border-color: #6b00ff;
-  box-shadow: 0 0 0 3px rgba(107, 0, 255, 0.2);
+  border-color: #334155;
+  box-shadow: 0 0 0 3px rgba(51, 65, 85, 0.1);
 }
 
 .auth-input::placeholder {
-  color: #475569;
+  color: #94a3b8;
 }
 
 .auth-submit-btn {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  background: #0f172a; /* Solid dark primary button */
   color: #ffffff;
   padding: 14px;
   border-radius: 10px;
@@ -125,15 +134,12 @@
   font-size: 1rem;
   border: none;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: background 0.2s ease;
   margin-top: 8px;
-  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
 }
 
 .auth-submit-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.5);
-  background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+  background: #1e293b;
 }
 
 .auth-submit-btn:disabled {
@@ -145,17 +151,17 @@
   margin-top: 24px;
   text-align: center;
   font-size: 0.9rem;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .auth-link {
-  color: #00f0ff;
+  color: #0f172a;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
   transition: color 0.2s;
 }
 
 .auth-link:hover {
   text-decoration: underline;
-  color: #38bdf8;
+  color: #334155;
 }

@@ -20,13 +20,13 @@ const Signup = () => {
     setIsLoading(true);
 
     try {
-      await axios.post('http://localhost:5001/api/auth/signup', {
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/signup`, {
         username,
         email,
         password
       });
 
-      const loginResponse = await axios.post('http://localhost:5001/api/auth/login', {
+      const loginResponse = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         email,
         password
       });
@@ -47,23 +47,24 @@ const Signup = () => {
 
   return (
     <div className="auth-container">
-      <div className="auth-glow-orb orb-purple-auth"></div>
-      <div className="auth-glow-orb orb-blue-auth"></div>
-
       <motion.div 
-        className="auth-card global-card"
+        className="auth-card"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
+        <div className="role-toggle">
+          <button type="button" className="active">User</button>
+        </div>
+
         <div className="auth-header">
-          <h2>Create Account</h2>
-          <p>Join NeuroTalk AI to start understanding your mind.</p>
+          <h2>Join NeuroTalk AI</h2>
+          <p>Create your account to start your journey</p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label htmlFor="username">Username</label>
+            <label htmlFor="username">Full Name</label>
             <input
               type="text"
               id="username"
@@ -95,7 +96,7 @@ const Signup = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Create a strong password"
+              placeholder="(min 8 characters)"
               required
               className="auth-input"
             />
@@ -106,12 +107,12 @@ const Signup = () => {
             className="auth-submit-btn" 
             disabled={isLoading}
           >
-            {isLoading ? 'Creating Account...' : 'Sign Up'}
+            {isLoading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
 
         <div className="auth-footer">
-          <p>Already have an account? <Link to="/login" className="auth-link">Log in</Link></p>
+          <p>Already have an account? <Link to="/login" className="auth-link">Sign In</Link></p>
         </div>
       </motion.div>
     </div>

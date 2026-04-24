@@ -39,7 +39,7 @@ const History = () => {
   const fetchAllHistory = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('http://localhost:5001/api/predict/history', {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/predict/history`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRecords(res.data);
@@ -66,7 +66,7 @@ const History = () => {
 
     try {
       setLoading(true);
-      const res = await axios.get(`http://localhost:5001/api/predict/history/search?q=${encodeURIComponent(searchTerm)}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/predict/history/search?q=${encodeURIComponent(searchTerm)}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRecords(res.data);
@@ -88,7 +88,7 @@ const History = () => {
 
     try {
       setLoading(true);
-      const res = await axios.get(`http://localhost:5001/api/predict/history/filter?emotion=${emotion.toLowerCase()}`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/predict/history/filter?emotion=${emotion.toLowerCase()}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRecords(res.data);

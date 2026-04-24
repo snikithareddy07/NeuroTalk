@@ -1,0 +1,27 @@
+services:
+
+  mongo:
+    image: mongo
+    container_name: neurotalk-mongo
+    ports:
+      - "27017:27017"
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: neurotalk-backend
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/neurotalk_ai
+
+  frontend:
+    build: ./frontend
+    container_name: neurotalk-frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend

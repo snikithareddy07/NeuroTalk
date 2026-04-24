@@ -61,7 +61,7 @@ const Dashboard = () => {
       if (activeTab === 'analytics' && historyRecords.length === 0) {
         setLoadingAnalytics(true);
         try {
-          const res = await axios.get('http://localhost:5001/api/predict/history', {
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/predict/history`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           setHistoryRecords(res.data);
@@ -83,7 +83,7 @@ const Dashboard = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:5001/api/predict/predict',
+        `${import.meta.env.VITE_API_URL}/api/predict/predict`,
         { text },
         {
           headers: {
